@@ -68,14 +68,19 @@ while running:
             # game_state.update_players()
             if joystick.get_button(button_a):
                 print("button a !")
+                game_state.load_pattern("degree")
             if joystick.get_button(button_b):
                 print("button b !")
+                game_state.load_pattern("dur")
             if joystick.get_button(button_x):
                 print("button x !")
+                game_state.load_pattern("sus")
             if joystick.get_button(button_y):
                 print("button y !")
+                game_state.load_pattern("oct")
             if joystick.get_button(button_RB):
                 print("button RB !")
+                game_state.display_pattern()
             if joystick.get_button(button_LB):
                 print("button LB !")
             if joystick.get_button(button_start):
@@ -98,28 +103,49 @@ while running:
                     game_state.update_players()
             if toggle_axis(joy_right_h):
                 if toggle_axis_dict[joy_right_h] == 1:
-                    print("joyR right !")
+                    # print("joyR right !")
+                    print("player3 selected")
+                    game_state.selected_player = [game_state.player3, game_state.state3, game_state.synth3, game_state.play3]
                 elif toggle_axis_dict[joy_right_h] == -1:
-                    print("joyR left !")
+                    # print("joyR left !")
+                    print("player1 selected")
+                    game_state.selected_player = [game_state.player1, game_state.state1, game_state.synth1, game_state.play1]
             if toggle_axis(joy_right_v):
                 if toggle_axis_dict[joy_right_v] == 1:
-                    print("joyR down !")
+                    # print("joyR down !")
+                    print("player4 selected")
+                    game_state.selected_player = [game_state.player4, game_state.state4, game_state.synth4, game_state.play4]
                 elif toggle_axis_dict[joy_right_v] == -1:
-                    print("joyR up !")
+                    # print("joyR up !")
+                    print("player2 selected")
+                    game_state.selected_player = [game_state.player2, game_state.state2, game_state.synth2, game_state.play2]
             if toggle_axis(button_LT):
                 if toggle_axis_dict[button_LT] == 1:
                     print("button LT !")
             if toggle_axis(button_RT):
                 if toggle_axis_dict[button_RT] == 1:
+                    game_state.toggle_player()
                     print("button RT !")
         elif event.type == pygame.JOYHATMOTION:
-            if joystick.get_hat(0) == cross_key_down:
-                print("crosskey_down !")
-            if joystick.get_hat(0) == cross_key_up:
-                print("crosskey_up !")
             if joystick.get_hat(0) == cross_key_left:
-                print("crosskey_left !")
+                # print("crosskey_left !")
+                game_state.pos_x = (game_state.pos_x - 1) % game_state.size
+                game_state.move_sound()
+                print(f"pos_x {game_state.pos_x}")
+            if joystick.get_hat(0) == cross_key_up:
+                # print("crosskey_up !")
+                game_state.pos_y = (game_state.pos_y + 1) % game_state.size
+                game_state.move_sound()
+                print(f"pos_y {game_state.pos_y}")
             if joystick.get_hat(0) == cross_key_right:
-                print("crosskey_right !")
+                # print("crosskey_right !")
+                game_state.pos_x = (game_state.pos_x + 1) % game_state.size
+                game_state.move_sound()
+                print(f"pos_x {game_state.pos_x}")
+            if joystick.get_hat(0) == cross_key_down:
+                # print("crosskey_down !")
+                game_state.pos_y = (game_state.pos_y - 1) % game_state.size
+                game_state.move_sound()
+                print(f"pos_y {game_state.pos_y}")
         elif event.type == pygame.QUIT:
             running = False
