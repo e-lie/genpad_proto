@@ -64,88 +64,105 @@ game_state = GameState()
 running = True
 while running:
     for event in pygame.event.get():
-        if event.type == pygame.JOYBUTTONDOWN:
-            # game_state.update_players()
-            if joystick.get_button(button_a):
-                print("button a !")
-                game_state.load_pattern("degree")
-            if joystick.get_button(button_b):
-                print("button b !")
-                game_state.load_pattern("dur")
-            if joystick.get_button(button_x):
-                print("button x !")
-                game_state.load_pattern("sus")
-            if joystick.get_button(button_y):
-                print("button y !")
-                game_state.load_pattern("oct")
-            if joystick.get_button(button_RB):
-                print("button RB !")
-                game_state.display_pattern()
-            if joystick.get_button(button_LB):
-                print("button LB !")
-            if joystick.get_button(button_start):
-                print("button start !")
-                game_state.pause_music()
-            if joystick.get_button(button_back):
-                print("button back !")
-                game_state.play_text_once("roooommm")
-        elif event.type == pygame.JOYAXISMOTION:
-            if toggle_axis(joy_left_h):
-                if toggle_axis_dict[joy_left_h] == 1:
-                    print("joyL right !")
-                elif toggle_axis_dict[joy_left_h] == -1:
-                    print("joyL left !")
-            if toggle_axis(joy_left_v):
-                if toggle_axis_dict[joy_left_v] == 1:
-                    print("joyL down !")
-                elif toggle_axis_dict[joy_left_v] == -1:
-                    print("joyL up !")
-                    game_state.update_players()
-            if toggle_axis(joy_right_h):
-                if toggle_axis_dict[joy_right_h] == 1:
-                    # print("joyR right !")
-                    print("player3 selected")
-                    game_state.selected_player = [game_state.player3, game_state.state3, game_state.synth3, game_state.play3]
-                elif toggle_axis_dict[joy_right_h] == -1:
-                    # print("joyR left !")
-                    print("player1 selected")
-                    game_state.selected_player = [game_state.player1, game_state.state1, game_state.synth1, game_state.play1]
-            if toggle_axis(joy_right_v):
-                if toggle_axis_dict[joy_right_v] == 1:
-                    # print("joyR down !")
-                    print("player4 selected")
-                    game_state.selected_player = [game_state.player4, game_state.state4, game_state.synth4, game_state.play4]
-                elif toggle_axis_dict[joy_right_v] == -1:
-                    # print("joyR up !")
-                    print("player2 selected")
-                    game_state.selected_player = [game_state.player2, game_state.state2, game_state.synth2, game_state.play2]
-            if toggle_axis(button_LT):
-                if toggle_axis_dict[button_LT] == 1:
-                    print("button LT !")
-            if toggle_axis(button_RT):
-                if toggle_axis_dict[button_RT] == 1:
-                    game_state.toggle_player()
-                    print("button RT !")
-        elif event.type == pygame.JOYHATMOTION:
-            if joystick.get_hat(0) == cross_key_left:
-                # print("crosskey_left !")
-                game_state.pos_x = (game_state.pos_x - 1) % game_state.size
-                game_state.move_sound()
-                print(f"pos_x {game_state.pos_x}")
-            if joystick.get_hat(0) == cross_key_up:
-                # print("crosskey_up !")
-                game_state.pos_y = (game_state.pos_y + 1) % game_state.size
-                game_state.move_sound()
-                print(f"pos_y {game_state.pos_y}")
-            if joystick.get_hat(0) == cross_key_right:
-                # print("crosskey_right !")
-                game_state.pos_x = (game_state.pos_x + 1) % game_state.size
-                game_state.move_sound()
-                print(f"pos_x {game_state.pos_x}")
-            if joystick.get_hat(0) == cross_key_down:
-                # print("crosskey_down !")
-                game_state.pos_y = (game_state.pos_y - 1) % game_state.size
-                game_state.move_sound()
-                print(f"pos_y {game_state.pos_y}")
-        elif event.type == pygame.QUIT:
-            running = False
+        # try:
+            if event.type == pygame.JOYBUTTONDOWN:
+                # game_state.update_players()
+                if joystick.get_button(button_a):
+                    game_state.last_push("button a !")
+                    game_state.load_pattern("degree")
+                if joystick.get_button(button_b):
+                    game_state.last_push("button b !")
+                    game_state.load_pattern("dur")
+                if joystick.get_button(button_x):
+                    game_state.last_push("button x !")
+                    game_state.load_pattern("sus")
+                if joystick.get_button(button_y):
+                    game_state.last_push("button y !")
+                    game_state.load_pattern("oct")
+                if joystick.get_button(button_RB):
+                    game_state.last_push("button RB !")
+                if joystick.get_button(button_LB):
+                    game_state.last_push("button LB !")
+                if joystick.get_button(button_start):
+                    game_state.last_push("button start !")
+                    game_state.pause_music()
+                if joystick.get_button(button_back):
+                    game_state.last_push("button back !")
+                    if game_state.paused:
+                        game_state=GameState()
+                        game_state.clock.clear()
+                        game_state.update_players()
+                    game_state.play_text_once("roooommm")
+            elif event.type == pygame.JOYAXISMOTION:
+                if toggle_axis(joy_left_h):
+                    if toggle_axis_dict[joy_left_h] == 1:
+                        game_state.last_push("joyL right !")
+                    elif toggle_axis_dict[joy_left_h] == -1:
+                        game_state.last_push("joyL left !")
+                if toggle_axis(joy_left_v):
+                    if toggle_axis_dict[joy_left_v] == 1:
+                        game_state.last_push("joyL down !")
+                    elif toggle_axis_dict[joy_left_v] == -1:
+                        game_state.last_push("joyL up !")
+                        game_state.update_players()
+                if toggle_axis(joy_right_h):
+                    if toggle_axis_dict[joy_right_h] == 1:
+                        game_state.last_push("joyR right !")
+                        print("player3 selected")
+                        game_state.selected_player = game_state.player3
+                    elif toggle_axis_dict[joy_right_h] == -1:
+                        game_state.last_push("joyR left !")
+                        print("player1 selected")
+                        game_state.selected_player = game_state.player1
+                if toggle_axis(joy_right_v):
+                    if toggle_axis_dict[joy_right_v] == 1:
+                        game_state.last_push("joyR down !")
+                        print("player4 selected")
+                        game_state.selected_player = game_state.player4
+                    elif toggle_axis_dict[joy_right_v] == -1:
+                        game_state.last_push("joyR up !")
+                        print("player2 selected")
+                        game_state.selected_player = game_state.player2
+                if toggle_axis(button_LT):
+                    if toggle_axis_dict[button_LT] == 1:
+                        game_state.last_push("button LT !")
+                        game_state.lt_pushed = True
+                    if toggle_axis_dict[button_LT] == -1:
+                        game_state.lt_pushed = False
+                        print("LT up !!")
+                if toggle_axis(button_RT):
+                    if toggle_axis_dict[button_RT] == 1:
+                        game_state.toggle_player()
+                        game_state.last_push("button RT !")
+            elif event.type == pygame.JOYHATMOTION:
+                if joystick.get_hat(0) == cross_key_left:
+                    game_state.last_push("crosskey_left !")
+                    game_state.pos_x = (game_state.pos_x - 1) % game_state.size
+                    game_state.move_sound()
+                    print(f"pos_x {game_state.pos_x}")
+                    game_state.display_pattern()
+                if joystick.get_hat(0) == cross_key_up:
+                    game_state.last_push("crosskey_up !")
+                    game_state.pos_y = (game_state.pos_y + 1) % game_state.size
+                    game_state.move_sound()
+                    print(f"pos_y {game_state.pos_y}")
+                    game_state.display_pattern()
+                if joystick.get_hat(0) == cross_key_right:
+                    game_state.last_push("crosskey_right !")
+                    game_state.pos_x = (game_state.pos_x + 1) % game_state.size
+                    game_state.move_sound()
+                    print(f"pos_x {game_state.pos_x}")
+                    game_state.display_pattern()
+                if joystick.get_hat(0) == cross_key_down:
+                    game_state.last_push("crosskey_down !")
+                    game_state.pos_y = (game_state.pos_y - 1) % game_state.size
+                    game_state.move_sound()
+                    print(f"pos_y {game_state.pos_y}")
+                    game_state.display_pattern()
+            elif event.type == pygame.QUIT:
+                running = False
+        # except:
+        #     game_state = GameState()
+        #     game_state.clock.clear()
+        #     game_state.update_players()
+        #     print("Error catched")

@@ -3,11 +3,11 @@ from FoxDot.preset import *
 from random import randint
 
 class GamePlayer:
-    def __init__(self, name, state, synth, playing=False):
-        self.name = name
+    def __init__(self, state, synth, playing=False):
         self.player = Player()
         self.synth = synth
         self.state = state
+        self.old_state = {}
         self.playing = playing
 
 class GameState:
@@ -18,7 +18,14 @@ class GameState:
             P[.5,.25,.25],
             P[.25],
             P[1/3],
+            P[3,5,6],
             P[1,2,4,0],
+            # "v.",
+            # ".(**.[ii])",
+            # "aeq.sb",
+            # "apo[ff]",
+            # {"amp":[.8,.9,.7,1]},
+            # {"room2": .6},
         ]
         self.size = size
         self.map = { x : { y : self.pattern_lib[randint(0, len(self.pattern_lib)-1)] for y in range(size)} for x in range(size)}
@@ -30,49 +37,42 @@ class GameState:
         self.pause_player = Player() # Player with amplify = 0 to use solo method as music pause
         self.paused = False
         self.event_player1 = Player()
-        self.event_player2 = Player()
-        self.player1 = Player()
-        self.player2 = Player()
-        self.player3 = Player()
-        self.player4 = Player()
-        self.player5 = Player()
-        self.synth1 = blip
-        self.synth2 = space
-        self.synth3 = bbass
-        self.synth4 = play
-        self.play1 = False
-        self.play2 = False
-        self.play3 = False
-        self.play4 = False
-        self.state1 = self.state2 = self.state3 = {
-            "degree": [0],
-            "dur": .5,
-        }
-        self.state2["oct"] = 6
-        self.state3["oct"] = 3
-        self.state4 = {
+        self.last_pushed_button = ["", ""]
+        self.last_id = 0
+        self.player1 = GamePlayer({"degree": [0],"dur": .5}, blip)
+        self.player2 = GamePlayer({"degree": [0],"dur": .5}, space)
+        self.player3 = GamePlayer({"degree": [0],"dur": .5}, bbass)
+        self.player4 = GamePlayer({}, play)
+        self.player2.state["oct"] = 6
+        self.player3.state["oct"] = 3
+        self.player4.state = {
             "degree" : "<c.><.(-[--])>",
             "dur" : .5,
         }
-        self.selected_player = [self.player1, self.state1, self.synth1, self.play1]
+        self.selected_player = self.player1
 
     def update_players(self):
-        self.player1 >> self.synth1(**self.state1)
-        self.player2 >> self.synth2(**self.state2)
-        self.player3 >> self.synth3(**self.state3)
-        self.player4 >> self.synth4(**self.state4)
-        if not self.play1:
-            self.player1.stop()
-        if not self.play2:
-            self.player2.stop()
-        if not self.play3:
-            self.player3.stop()
-        if not self.play4:
-            self.player4.stop()
+        self.player1.player >> self.player1.synth(**self.player1.state)
+        self.player2.player >> self.player2.synth(**self.player2.state)
+        self.player3.player >> self.player3.synth(**self.player3.state)
+        self.player4.player >> self.player4.synth(**self.player4.state)
+        self.display_states()
+        if not self.player1.playing:
+            self.player1.player.stop()
+        if not self.player2.playing:
+            self.player2.player.stop()
+        if not self.player3.playing:
+            self.player3.player.stop()
+        if not self.player4.playing:
+            self.player4.player.stop()
+
+    def last_push(self, button_str):
+        print(button_str)
+        self.last_id = (self.last_id + 1) % 2 #switch index in a list of two elements
+        self.last_pushed_button[self.last_id] = button_str
     
     def toggle_player(self):
-        self.selected_player[3] = not self.selected_player[3]
-        print(self.selected_player[3])
+        self.selected_player.playing = not self.selected_player.playing
         self.update_players()
 
     def pause_music(self):
@@ -90,6 +90,12 @@ class GameState:
         def stop_playerr():
             self.event_player1.stop()
 
+    def display_states(self):
+        print(f"player1 {self.player1.state} old {self.player1.old_state}")
+        print(f"player2 {self.player2.state} old {self.player2.old_state}")
+        print(f"player3 {self.player3.state} old {self.player3.old_state}")
+        print(f"player4 {self.player4.state} old {self.player4.old_state}")
+
     def error_sound(self):
         self.play_text_once("z", sdb=0, amp=3, rate=1)
 
@@ -101,7 +107,7 @@ class GameState:
 
     def check_pattern_oct_recursive(self, pattern):
         res = True
-        for e in Pattern:
+        for e in list(pattern):
             if isinstance(e, Pattern):
                 res = self.check_pattern_oct_recursive(e)
             elif e < 2 or e > 9:
@@ -109,18 +115,28 @@ class GameState:
         return res
 
     def load_pattern(self, param_name):
+        if self.last_pushed_button[0] == self.last_pushed_button[1]: # cancel last loading
+            print("go backkkkk")
+            state_backup = self.selected_player.state
+            self.selected_player.state = dict(self.selected_player.old_state) # we need a copy of the state
+            self.selected_player.old_state = state_backup
+            self.selected_player.playing = True
+            self.update_players()
+            return
+
         pattern = self.map[self.pos_x][self.pos_y]
         try:
             assert(param_name in ['degree', 'dur', 'sus', 'oct'])
-            if param_name == 'oct' and not self.check_pattern_oct_recursive(pattern):
-                self.error_sound()
-            else:
-                self.selected_player[1][param_name] = pattern
-                self.selected_player[3] = True
-                self.update_players()
         except:
             self.error_sound()
             print("Error loading pattern !")
+        if param_name == 'oct' and not self.check_pattern_oct_recursive(pattern):
+            self.error_sound()
+        else:
+            self.selected_player.old_state = dict(self.selected_player.state) # we need a copy of the state
+            self.selected_player.state[param_name] = pattern
+            self.selected_player.playing = True
+            self.update_players()
 
 if __name__ == "__main__":
     game = GammeState(10)
